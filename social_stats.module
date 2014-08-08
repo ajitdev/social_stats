@@ -56,7 +56,7 @@ function social_stats_permission() {
       'description' => t('Settings specific to the content type for Social Stats module.'),
     ),
     'administer social stats cron' => array(
-      'title' => t('Administer Social Stats content type settings'),
+      'title' => t('Administer Social Stats cron settings'),
       'description' => t('Cron settings for Social Stats module.')
     ),
   );

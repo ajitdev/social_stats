@@ -106,7 +106,7 @@ function social_stats_content_types_form() {
   foreach ($node_types as $types) {
     $form['social_stats'][$i] = array(
       '#type' => 'fieldset',
-      '#title' => $types->name,
+      '#title' => filter_xss_admin($types->name),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     );

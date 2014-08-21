@@ -71,6 +71,16 @@ function social_stats_schema() {
         'type' => 'int',
         'default' => 0,
       ),
+      'share' => array(
+        'type' => 'int',
+        'description' => "GooglePlus Shares",
+        'not null' => FALSE,
+      ),
+      'total' => array(
+        'type' => 'int',
+        'description' => "GooglePlus Total",
+        'not null' => FALSE,
+      ),
     ),
     'primary key' => array('nid'),
   );

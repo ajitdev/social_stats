@@ -37,6 +37,12 @@ function social_stats_schema() {
         'type' => 'int',
         'default' => 0,
       ),
+      'changed' => array(
+        'description' => 'Time at which the data was last fetched.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('nid'),
   );
@@ -52,6 +58,12 @@ function social_stats_schema() {
       'tweets' => array(
         'description' => 'Number of times this node has been tweeted.',
         'type' => 'int',
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'Time at which the data was last fetched.',
+        'type' => 'int',
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
@@ -81,6 +93,12 @@ function social_stats_schema() {
         'description' => "GooglePlus Total",
         'not null' => FALSE,
       ),
+      'changed' => array(
+        'description' => 'Time at which the data was last fetched.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('nid'),
   );
@@ -96,6 +114,12 @@ function social_stats_schema() {
       'linkedin_shares' => array(
         'description' => 'Number of this node has been shared on LinkedIn.',
         'type' => 'int',
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'Time at which the data was last fetched.',
+        'type' => 'int',
+        'not null' => TRUE,
         'default' => 0,
       ),
     ),
@@ -153,5 +177,47 @@ function social_stats_update_7001() {
   );
   if (!db_field_exists('social_stats_gplus', 'total')) {
     db_add_field('social_stats_gplus', 'total', $spec);
+  }
+}
+
+/**
+ * Implements hook_update_N().
+ */
+function social_stats_update_7002() {
+  $spec = array(
+    'description' => 'Time at which the data was last fetched.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  if (!db_field_exists('social_stats_facebook', 'changed')) {
+    db_add_field('social_stats_facebook', 'changed', $spec);
+  }
+  $spec = array(
+    'description' => 'Time at which the data was last fetched.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  if (!db_field_exists('social_stats_twitter', 'changed')) {
+    db_add_field('social_stats_twitter', 'changed', $spec);
+  }
+  $spec = array(
+    'description' => 'Time at which the data was last fetched.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  if (!db_field_exists('social_stats_gplus', 'changed')) {
+    db_add_field('social_stats_gplus', 'changed', $spec);
+  }
+  $spec = array(
+    'description' => 'Time at which the data was last fetched.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  if (!db_field_exists('social_stats_linkedin', 'changed')) {
+    db_add_field('social_stats_linkedin', 'changed', $spec);
   }
 }

@@ -106,6 +106,7 @@ function _social_stats_facebook($node, $node_path = '') {
           'fb_shares' => intval($facebook_data[0]->share_count),
           'fb_comments' => intval($facebook_data[0]->commentsbox_count),
           'fb_total' => intval($facebook_data[0]->total_count),
+          'changed' => time(),
         ))
         ->execute();
         return $facebook_data[0]->total_count;
@@ -143,7 +144,10 @@ function _social_stats_twitter($node, $node_path = '') {
     $twitter_shares = intval($tweets_data->count);
     if ($twitter_shares) {
       db_merge('social_stats_twitter')
-      ->key(array('nid' => $node->nid))
+      ->key(array(
+        'nid' => $node->nid,
+        'changed' => time(),
+      ))
       ->fields(array('tweets' => $twitter_shares))
       ->execute();
     }
@@ -180,7 +184,10 @@ function _social_stats_linkedin($node, $node_path = '') {
     $linkedin_shares = intval($linkedin_data->count);
     if ($linkedin_shares) {
       db_merge('social_stats_linkedin')
-      ->key(array('nid' => $node->nid))
+      ->key(array(
+        'nid' => $node->nid,
+        'changed' => time(),
+      ))
       ->fields(array('linkedin_shares' => $linkedin_shares))
       ->execute();
     }
@@ -210,6 +217,7 @@ function _social_stats_googleplus($node, $node_path = '') {
         'plusone' => $gplus_like_count,
         'share' => $gplus_share_count,
         'total' => $gplus_count,
+        'changed' => time(),
       )
     )
     ->execute();

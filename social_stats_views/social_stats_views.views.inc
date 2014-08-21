@@ -82,6 +82,21 @@ function social_stats_views_views_data() {
     ),
   );
 
+  // Define field, filter and sort type plugins for Facebook timestamp.
+  $data['social_stats_facebook']['changed'] = array(
+    'title' => t('Facebook Updated Date'),
+    'help' => t('Time at which the data from Facebook was updated.'),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
+  );
+
   // Use the same group which was defined earlier to group plugins.
   $data['social_stats_twitter']['table']['group'] = t('Social Stats');
 
@@ -108,6 +123,21 @@ function social_stats_views_views_data() {
     ),
   );
 
+  // Define field, filter and sort type plugins for Twitter timestamp.
+  $data['social_stats_twitter']['changed'] = array(
+    'title' => t('Twitter Updated Date'),
+    'help' => t('Time at which the data from Twitter was updated.'),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
+  );
+
   // Use the same group which was defined earlier to group plugins.
   $data['social_stats_linkedin']['table']['group'] = t('Social Stats');
 
@@ -131,6 +161,21 @@ function social_stats_views_views_data() {
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
+    ),
+  );
+
+  // Define field, filter and sort type plugins for Linkedin timestamp.
+  $data['social_stats_linkedin']['changed'] = array(
+    'title' => t('Linkedin Updated Date'),
+    'help' => t('Time at which the data from LinkedIn was updated.'),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
     ),
   );
 
@@ -187,6 +232,21 @@ function social_stats_views_views_data() {
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
+    ),
+  );
+
+  // Define field, filter and sort type plugins for GooglePlus timestamp.
+  $data['social_stats_gplus']['changed'] = array(
+    'title' => t('GooglePlus Updated Date'),
+    'help' => t('Time at which the data from GooglePlus was updated.'),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
     ),
   );
 

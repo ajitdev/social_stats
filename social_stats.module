@@ -144,11 +144,11 @@ function _social_stats_twitter($node, $node_path = '') {
     $twitter_shares = intval($tweets_data->count);
     if ($twitter_shares) {
       db_merge('social_stats_twitter')
-      ->key(array(
-        'nid' => $node->nid,
+      ->key(array('nid' => $node->nid))
+      ->fields(array(
+        'tweets' => $twitter_shares,
         'changed' => time(),
       ))
-      ->fields(array('tweets' => $twitter_shares))
       ->execute();
     }
   }
@@ -184,11 +184,11 @@ function _social_stats_linkedin($node, $node_path = '') {
     $linkedin_shares = intval($linkedin_data->count);
     if ($linkedin_shares) {
       db_merge('social_stats_linkedin')
-      ->key(array(
-        'nid' => $node->nid,
+      ->key(array('nid' => $node->nid))
+      ->fields(array(
+        'linkedin_shares' => $linkedin_shares,
         'changed' => time(),
       ))
-      ->fields(array('linkedin_shares' => $linkedin_shares))
       ->execute();
     }
   }

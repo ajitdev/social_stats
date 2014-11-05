@@ -9,6 +9,7 @@
  * Configuration form for the general settings for Social Stats module.
  */
 function social_stats_general_settings_form($form, &$form_state) {
+  global $base_url;  
   drupal_add_library('system', 'ui.datepicker');
   drupal_add_js("jQuery(document).ready(function(){
       jQuery('.pickadate').datepicker({
@@ -26,6 +27,15 @@ function social_stats_general_settings_form($form, &$form_state) {
     '#collapsed' => FALSE,
     '#tree' => FALSE,
     '#weight' => -1,
+  );
+
+  $form['basic_settings']['social_stats_url_root'] = array(
+    '#type' => 'textfield',
+    '#title' => t('URL Root'),
+    '#description' => t('Root of the URL to check against social media. For instance, "https://mysite.com" (no trailing slash). This is useful for fetching production site stats from a different environment.'),
+    '#default_value' => variable_get('social_stats_url_root', $base_url),
+    '#size' => 60,
+    '#maxlength' => 254,
   );
 
   $form['basic_settings']['social_stats_options'] = array(

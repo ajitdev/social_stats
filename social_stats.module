@@ -293,6 +293,7 @@ function _social_stats_googleplus_share($node_path) {
  * The queue worker function to update the data.
  */
 function _social_stats_update($result) {
+  global $base_url;
   $facebook_total = 0;
   $twitter_shares = 0;
   $linkedin_shares = 0;
@@ -300,7 +301,8 @@ function _social_stats_update($result) {
   $variable = variable_get('social_stats_' . $result->type);
 
   // Create absolute node path using the node path.
-  $node_path = url('node/' . $result->nid, array('absolute' => TRUE));
+  $node_path_root = variable_get('social_stats_url_root', $base_url);
+  $node_path = $node_path_root . url('node/' . $result->nid);
 
   // Getting data from Facebook for nodes of the selected node type.
   if ($variable['Facebook']) {

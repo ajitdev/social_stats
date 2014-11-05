@@ -93,9 +93,22 @@ function social_stats_general_settings_form($form, &$form_state) {
     '#size' => 3,
     '#maxlength' => 3,
   );
+
+  $form['#submit'] = array('social_stats_general_settings_form_submit');
+
   return system_settings_form($form);
 }
 
+/**
+ * Submit function to adjust the next cron execution time if the value changes.
+ */
+function social_stats_general_settings_form_submit($form, &$form_state) {
+  $orig_interval = variable_get('social_stats_cron_interval', 0);
+  $new_interval = $form_state['values']['social_stats_cron_interval'];
+  if ($orig_interval != $new_interval) {
+    variable_set('social_stats_next_execution', REQUEST_TIME + $new_interval);
+  }
+}
 
 /**
  * Configuration form for listing of the content types against the social media.

@@ -106,7 +106,7 @@ function _social_stats_facebook($node, $node_path = '') {
           'fb_shares' => intval($facebook_data[0]->share_count),
           'fb_comments' => intval($facebook_data[0]->commentsbox_count),
           'fb_total' => intval($facebook_data[0]->total_count),
-          'changed' => time(),
+          'changed' => REQUEST_TIME,
         ))
         ->execute();
         return $facebook_data[0]->total_count;
@@ -147,7 +147,7 @@ function _social_stats_twitter($node, $node_path = '') {
       ->key(array('nid' => $node->nid))
       ->fields(array(
         'tweets' => $twitter_shares,
-        'changed' => time(),
+        'changed' => REQUEST_TIME,
       ))
       ->execute();
     }
@@ -187,7 +187,7 @@ function _social_stats_linkedin($node, $node_path = '') {
       ->key(array('nid' => $node->nid))
       ->fields(array(
         'linkedin_shares' => $linkedin_shares,
-        'changed' => time(),
+        'changed' => REQUEST_TIME,
       ))
       ->execute();
     }
@@ -217,7 +217,7 @@ function _social_stats_googleplus($node, $node_path = '') {
         'plusone' => $gplus_like_count,
         'share' => $gplus_share_count,
         'total' => $gplus_count,
-        'changed' => time(),
+        'changed' => REQUEST_TIME,
       )
     )
     ->execute();
@@ -351,8 +351,8 @@ function social_stats_cron_queue_info() {
  */
 function social_stats_cron() {
   $interval = variable_get('social_stats_cron_interval', 60 * 60 * 24);
-  if (time() >= variable_get('social_stats_next_execution', 0)) {
-    variable_set('social_stats_next_execution', time() + $interval);
+  if (REQUEST_TIME >= variable_get('social_stats_next_execution', 0)) {
+    variable_set('social_stats_next_execution', REQUEST_TIME  + $interval);
 
     // Get list of content types in the site.
     $node_types = node_type_get_types();

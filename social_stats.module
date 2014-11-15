@@ -91,7 +91,7 @@ function _social_stats_facebook($node, $node_path = '') {
     watchdog(t('Social Stats'),
       'Problem updating data from Facebook for %node_path. Error: %err',
       array('%node_path' => $node_path, '%err' => $fql_response->error),
-      NULL, WATCHDOG_ERROR);
+      WATCHDOG_ERROR);
   }
   else {
     $fql_data = json_decode($fql_response->data);
@@ -135,7 +135,7 @@ function _social_stats_twitter($node, $node_path = '') {
     watchdog(t('Social Stats'),
       'Problem updating data from Twitter for %node_path. Error: %err',
       array('%node_path' => $node_path, '%err' => $tweets_response->error),
-      NULL, WATCHDOG_ERROR);
+      WATCHDOG_ERROR);
   }
   else {
     $tweets_data = json_decode($tweets_response->data);
@@ -175,7 +175,7 @@ function _social_stats_linkedin($node, $node_path = '') {
     watchdog(t('Social Stats'),
       'Problem updating data from LinkedIn for %node_path. Error: %err',
       array('%node_path' => $node_path, '%err' => $linkedin_response->error),
-      NULL, WATCHDOG_ERROR);
+      WATCHDOG_ERROR);
   }
   else {
     $linkedin_data = json_decode($linkedin_response->data);
@@ -254,7 +254,7 @@ function _social_stats_googleplus_plusone($node_path) {
     watchdog(t('Social Stats'),
       'Problem updating data from Google+ for %node_path. Error: %err',
       array('%node_path' => $node_path, '%err' => $request->error),
-      NULL, WATCHDOG_ERROR);
+      WATCHDOG_ERROR);
   }
   else {
     $request->data = json_decode($request->data);

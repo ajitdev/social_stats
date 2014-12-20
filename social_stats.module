@@ -65,18 +65,22 @@ function social_stats_permission() {
 /**
  * Fetch the data from Facebook and save it to local table.
  *
- * @param array $node
- *   Contains $node->nid.
- * @param string $node_path
- *   The URL alias.
+ * @param $nodes
+ *   Contains minimal node objects keyed by nid. Passed by reference and updated
+ *   with a total count ->social_stats[service name].
  */
-function _social_stats_facebook($node, $node_path = '') {
-  $fql_query  = 'SELECT share_count, like_count, commentsbox_count, total_count ';
-  $fql_query .= "FROM link_stat WHERE url='" . $node_path . "'";
+function _social_stats_facebook_multiple(&$nodes) {
+  $fql_queries = array();
+  $counts = array();
+  $fql_base_query  = 'SELECT share_count, like_count, commentsbox_count, total_count ';
 
-  // TODO: Implement multi-query
-  // https://developers.facebook.com/docs/technical-guides/fql/
-  $fql_queries = array('query1' => $fql_query);
+  // Loop over each path to build multi-query
+  foreach ($nodes as $nid => $node) {
+    $fql_query = $fql_base_query . "FROM link_stat WHERE url='" . $node->node_path . "'";
+    $fql_queries['nid' . $nid] = $fql_query;
+    $counts[$nid] = 0;
+  }
+
   $params = array(
     'q' => json_encode($fql_queries),
     'format' => 'json',
@@ -89,29 +93,30 @@ function _social_stats_facebook($node, $node_path = '') {
 
   if (!empty($fql_response->error)) {
     watchdog(t('Social Stats'),
-      'Problem updating data from Facebook for %node_path. Error: %err',
-      array('%node_path' => $node_path, '%err' => $fql_response->error),
+      'Problem updating data from Facebook for node IDs (%nids). Error: %err',
+      array('%nids' => implode(', ', array_keys($nodes)), '%err' => $fql_response->error),
       WATCHDOG_ERROR);
   }
   else {
     $fql_data = json_decode($fql_response->data);
     foreach ($fql_data->data as $fql_data_row) {
-      $facebook_data = $fql_data_row->fql_result_set;
+      $facebook_data = reset($fql_data_row->fql_result_set);
       // Only update table if counter > 0
-      if (intval($facebook_data[0]->total_count)) {
+      // @TODO Update every row in one query.
+      if (intval($facebook_data->total_count)) {
+        $nid = (int) str_replace('nid', '', $fql_data_row->name);
         db_merge('social_stats_facebook')
-        ->key(array('nid' => $node->nid))
+        ->key(array('nid' => $nid))
         ->fields(array(
-          'fb_likes' => intval($facebook_data[0]->like_count),
-          'fb_shares' => intval($facebook_data[0]->share_count),
-          'fb_comments' => intval($facebook_data[0]->commentsbox_count),
-          'fb_total' => intval($facebook_data[0]->total_count),
+          'fb_likes' => intval($facebook_data->like_count),
+          'fb_shares' => intval($facebook_data->share_count),
+          'fb_comments' => intval($facebook_data->commentsbox_count),
+          'fb_total' => intval($facebook_data->total_count),
           'changed' => REQUEST_TIME,
         ))
         ->execute();
-        return $facebook_data[0]->total_count;
+        $nodes[$nid]->social_stats['Facebook'] = $facebook_data->total_count;
       }
-      return 0;
     }
   }
 }
@@ -124,35 +129,38 @@ function _social_stats_facebook($node, $node_path = '') {
  * @param string $node_path
  *   The URL alias.
  */
-function _social_stats_twitter($node, $node_path = '') {
-  $twitter_shares = 0;
+function _social_stats_twitter_multiple(&$nodes) {
+  foreach ($nodes as &$node) {
+    $node_path = $node->node_path;
+    $twitter_shares = 0;
 
-  $tweets_query = 'http://urls.api.twitter.com/1/urls/count.json?url=';
-  $tweets_query .= $node_path;
-  $tweets_response = drupal_http_request($tweets_query);
+    $tweets_query = 'http://urls.api.twitter.com/1/urls/count.json?url=';
+    $tweets_query .= $node_path;
+    $tweets_response = drupal_http_request($tweets_query);
 
-  if (!empty($tweets_response->error)) {
-    watchdog(t('Social Stats'),
-      'Problem updating data from Twitter for %node_path. Error: %err',
-      array('%node_path' => $node_path, '%err' => $tweets_response->error),
-      WATCHDOG_ERROR);
-  }
-  else {
-    $tweets_data = json_decode($tweets_response->data);
-
-    // Only update table if counter > 0
-    $twitter_shares = intval($tweets_data->count);
-    if ($twitter_shares) {
-      db_merge('social_stats_twitter')
-      ->key(array('nid' => $node->nid))
-      ->fields(array(
-        'tweets' => $twitter_shares,
-        'changed' => REQUEST_TIME,
-      ))
-      ->execute();
+    if (!empty($tweets_response->error)) {
+      watchdog(t('Social Stats'),
+        'Problem updating data from Twitter for %node_path. Error: %err',
+        array('%node_path' => $node_path, '%err' => $tweets_response->error),
+        WATCHDOG_ERROR);
     }
+    else {
+      $tweets_data = json_decode($tweets_response->data);
+
+      // Only update table if counter > 0
+      $twitter_shares = intval($tweets_data->count);
+      if ($twitter_shares) {
+        db_merge('social_stats_twitter')
+          ->key(array('nid' => $node->nid))
+          ->fields(array(
+            'tweets' => $twitter_shares,
+            'changed' => REQUEST_TIME,
+          ))
+          ->execute();
+      }
+    }
+    $node->social_stats['Twitter'] = $twitter_shares;
   }
-  return $twitter_shares;
 }
 
 /**
@@ -163,36 +171,40 @@ function _social_stats_twitter($node, $node_path = '') {
  * @param string $node_path
  *   The URL alias.
  */
-function _social_stats_linkedin($node, $node_path = '') {
-  $linkedin_shares = 0;
+function _social_stats_linkedin_multiple(&$nodes) {
+  foreach ($nodes as &$node) {
+    $node_path = $node->node_path;
 
-  // Write a query to fetch the data from LinkedIn.
-  $linkedin_query = 'http://www.linkedin.com/countserv/count/share?';
-  $linkedin_query .= 'format=json&url=' . $node_path;
-  $linkedin_response = drupal_http_request($linkedin_query);
+    $linkedin_shares = 0;
 
-  if (!empty($linkedin_response->error)) {
-    watchdog(t('Social Stats'),
-      'Problem updating data from LinkedIn for %node_path. Error: %err',
-      array('%node_path' => $node_path, '%err' => $linkedin_response->error),
-      WATCHDOG_ERROR);
-  }
-  else {
-    $linkedin_data = json_decode($linkedin_response->data);
+    // Write a query to fetch the data from LinkedIn.
+    $linkedin_query = 'http://www.linkedin.com/countserv/count/share?';
+    $linkedin_query .= 'format=json&url=' . $node_path;
+    $linkedin_response = drupal_http_request($linkedin_query);
 
-    // Only update table if counter > 0
-    $linkedin_shares = intval($linkedin_data->count);
-    if ($linkedin_shares) {
-      db_merge('social_stats_linkedin')
-      ->key(array('nid' => $node->nid))
-      ->fields(array(
-        'linkedin_shares' => $linkedin_shares,
-        'changed' => REQUEST_TIME,
-      ))
-      ->execute();
+    if (!empty($linkedin_response->error)) {
+      watchdog(t('Social Stats'),
+        'Problem updating data from LinkedIn for %node_path. Error: %err',
+        array('%node_path' => $node_path, '%err' => $linkedin_response->error),
+        WATCHDOG_ERROR);
     }
+    else {
+      $linkedin_data = json_decode($linkedin_response->data);
+
+      // Only update table if counter > 0
+      $linkedin_shares = intval($linkedin_data->count);
+      if ($linkedin_shares) {
+        db_merge('social_stats_linkedin')
+          ->key(array('nid' => $node->nid))
+          ->fields(array(
+            'linkedin_shares' => $linkedin_shares,
+            'changed' => REQUEST_TIME,
+          ))
+          ->execute();
+      }
+    }
+    $node->social_stats['LinkedIn'] = $linkedin_shares;
   }
-  return $linkedin_shares;
 }
 
 /**
@@ -203,26 +215,30 @@ function _social_stats_linkedin($node, $node_path = '') {
  * @param string $node_path
  *   The URL alias.
  */
-function _social_stats_googleplus($node, $node_path = '') {
-  $gplus_like_count = _social_stats_googleplus_plusone($node_path);
-  $gplus_share_count = _social_stats_googleplus_share($node_path);
-  $gplus_count = $gplus_like_count + $gplus_share_count;
+function _social_stats_googleplus_multiple(&$nodes) {
+  foreach ($nodes as &$node) {
+    $node_path = $node->node_path;
 
-  // Only update table if counter > 0
-  if ($gplus_count) {
-    db_merge('social_stats_gplus')
-    ->key(array('nid' => $node->nid))
-    ->fields(
-      array(
-        'plusone' => $gplus_like_count,
-        'share' => $gplus_share_count,
-        'total' => $gplus_count,
-        'changed' => REQUEST_TIME,
-      )
-    )
-    ->execute();
+    $gplus_like_count = _social_stats_googleplus_plusone($node_path);
+    $gplus_share_count = _social_stats_googleplus_share($node_path);
+    $gplus_count = $gplus_like_count + $gplus_share_count;
+
+    // Only update table if counter > 0
+    if ($gplus_count) {
+      db_merge('social_stats_gplus')
+        ->key(array('nid' => $node->nid))
+        ->fields(
+          array(
+            'plusone' => $gplus_like_count,
+            'share' => $gplus_share_count,
+            'total' => $gplus_count,
+            'changed' => REQUEST_TIME,
+          )
+        )
+        ->execute();
+    }
+    $node->social_stats['Google Plus'] = $gplus_count;
   }
-  return $gplus_count;
 }
 
 /**
@@ -292,49 +308,150 @@ function _social_stats_googleplus_share($node_path) {
 /**
  * The queue worker function to update the data.
  */
-function _social_stats_update($result) {
-  global $base_url;
-  $facebook_total = 0;
-  $twitter_shares = 0;
-  $linkedin_shares = 0;
-  $google_plusone = 0;
-  $variable = variable_get('social_stats_' . $result->type);
+function _social_stats_update($batch) {
+  $counts = array();
+  // Get services config.
+  $services = _social_stats_get_services();
 
+  // Check if arg is single object for legacy compatability.
+  if (!is_array($batch)) {
+    $node_type_services = variable_get('social_stats_' . $batch->type);
+    $batch = array(
+      'items' => array($batch->nid => $batch),
+      'unfetched_services' => array_filter($node_type_services),
+    );
+  }
+
+  // Filter out only the services we need to fetch.
+  $services = array_intersect_key($services, $batch['unfetched_services']);
+  // Get the maximum amount of items any unfetched service can handle.
+  $service_max = _social_stats_get_services_max($services);
+  $batch_count = count($batch['items']);
+
+  // Check if there are services that can handle this many items.
+  if ($batch_count <= $service_max && $services) {
+    // Populate node_paths
+    _social_stats_get_paths($batch['items']);
+
+    foreach ($services as $name => $service) {
+      // Fetch counts for each service that can handle this many items.
+      if ($batch_count <= $service['fetch_max']) {
+
+        // Fetch count for service.
+        $callback = $service['fetch_multiple_callback'];
+        $callback($batch['items']);
+
+        // Prevent service from fetching again for this batch.
+        unset($batch['unfetched_services'][$name]);
+        unset($services[$name]);
+      }
+    }
+  }
+
+  // Check if batch contains only one item and all services have been fetched.
+  if (empty($batch['unfetched_services'])) {
+    // Only one item in batch, update total.
+    $item = reset($batch['items']);
+
+    // Adding the total data from all services to get total virality.
+    // Update table only when counter > 0
+    $count_total = array_sum($item->social_stats);
+    if ($count_total) {
+      db_merge('social_stats_total')
+        ->key(array('nid' => $item->nid))
+        ->fields(array('total_virality' => $count_total))
+        ->execute();
+    }
+  }
+  else {
+    // We have services left and too many items in this batch to fetch them.
+    // Get the maximum amount of items any unfetched service can handle.
+    $service_max = _social_stats_get_services_max($services);
+
+    // Strip out node_paths before saving to queue for space saving.
+    _social_stats_unset_paths($batch['items']);
+
+    // Subdivide batch into chunks that the service with highest max count can handle.
+    $new_batches = _social_stats_batch_split($batch['items'], $service_max);
+    $queue = DrupalQueue::get('social_stats_update_stats');
+    foreach ($new_batches as $new_batch) {
+      // Create new queue job with batch.
+      $queue->createItem(array(
+        'items' => $new_batch,
+        'unfetched_services' => $batch['unfetched_services'],
+      ));
+    }
+  }
+}
+
+/**
+ * Populate node_path for every node in batch.
+ *
+ * @param $batch
+ */
+function _social_stats_get_paths(&$batch) {
   // Create absolute node path using the node path.
+  global $base_url;
   $node_path_root = variable_get('social_stats_url_root', $base_url);
-  $node_path = $node_path_root . url('node/' . $result->nid);
-
-  // Getting data from Facebook for nodes of the selected node type.
-  if ($variable['Facebook']) {
-    $facebook_total = _social_stats_facebook($result, $node_path);
+  foreach ($batch as &$node) {
+    $node->node_path = $node_path_root . url('node/' . $node->nid);
   }
+}
 
-  // Getting data from Twitter for nodes of selected node type.
-  if ($variable['Twitter']) {
-    $twitter_shares = _social_stats_twitter($result, $node_path);
+/**
+ * Remove node_path from object for space saving.
+ *
+ * @param $batch
+ */
+function _social_stats_unset_paths(&$batch) {
+  foreach ($batch as &$node) {
+    unset($node->node_path);
   }
+}
 
-  // Getting data from LinkedIn for nodes of selected node type.
-  if ($variable['LinkedIn']) {
-    $linkedin_shares = _social_stats_linkedin($result, $node_path);
+/**
+ * Get the maximum amount of items any service can handle.
+ *
+ * @param $services
+ * @return mixed
+ */
+function _social_stats_get_services_max($services) {
+  $max = 1;
+  foreach ($services as $service) {
+    $max = ($service['fetch_max'] > $max) ? $service['fetch_max'] : $max;
   }
+  return $max;
+}
 
-  // Getting data from Google Plus for nodes of selected node type.
-  if ($variable['Google Plus']) {
-    $google_plusone = _social_stats_googleplus($result, $node_path);
-  }
+/**
+ * Return info on available services
+ */
+function _social_stats_get_services() {
+  $services['Facebook'] = array(
+    'fetch_max' => 50,
+    'fetch_multiple_callback' => '_social_stats_facebook_multiple',
+    'count_key' => 'facebook_total'
+  );
+  $services['Twitter'] = array(
+    'fetch_max' => 1,
+    'fetch_multiple_callback' => '_social_stats_twitter_multiple',
+    'count_key' => 'twitter_shares'
+  );
+  $services['LinkedIn'] = array(
+    'fetch_max' => 1,
+    'fetch_multiple_callback' => '_social_stats_linkedin_multiple',
+    'count_key' => 'linkedin_shares'
+  );
+  $services['Google Plus'] = array(
+    'fetch_max' => 1,
+    'fetch_multiple_callback' => '_social_stats_googleplus_multiple',
+    'count_key' => 'google_plusone'
+  );
 
-  $count_total = $facebook_total + $twitter_shares;
-  $count_total += $linkedin_shares + $google_plusone;
+  // Let other modules modify or add services
+  drupal_alter('social_stats_services', $services);
 
-  // Adding the total data from all above to get total virality.
-  // Update table only when counter > 0
-  if ($count_total) {
-    db_merge('social_stats_total')
-    ->key(array('nid' => $result->nid))
-    ->fields(array('total_virality' => $count_total))
-    ->execute();
-  }
+  return $services;
 }
 
 /**
@@ -358,40 +475,94 @@ function social_stats_cron() {
 
     // Get list of content types in the site.
     $node_types = node_type_get_types();
-    $content_types = array();
+    $content_types_config_digests = array();
+    $services = array();
     foreach ($node_types as $types) {
-      $variable = variable_get('social_stats_' . $types->type);
-      if ($variable['Facebook']    ||
-          $variable['Twitter']     ||
-          $variable['Google Plus'] ||
-          $variable['LinkedIn']) {
-        $content_types[] = $types->type;
+      $node_type_services = variable_get('social_stats_' . $types->type);
+      $node_type_services_filtered = array_filter($node_type_services);
+      if (!empty($node_type_services_filtered)) {
+        // Create a digest of this config to group batches on.
+        $config_digest = drupal_hash_base64(json_encode($node_type_services));
+        $content_types_config_digests[$types->type] = $config_digest;
+        $services[$config_digest] = $node_type_services_filtered;
       }
     }
+    // Get an array of all content types with enabled services.
+    $content_types = array_keys($content_types_config_digests);
 
-    $start_date = '';
-    $social_stats_options = variable_get('social_stats_options', 0);
-    if ($social_stats_options == 0) {
-      $start_date = variable_get('social_stats_start_date', '01/01/1970');
-    }
-    elseif ($social_stats_options == 1) {
-      $start_date = variable_get('social_stats_date_offset', '-100 days');
-    }
+    // Only proceed if any node types have enabled services.
+    if (!empty($content_types)) {
+      $start_date = '';
+      $social_stats_options = variable_get('social_stats_options', 0);
+      if ($social_stats_options == 0) {
+        $start_date = variable_get('social_stats_start_date', '01/01/1970');
+      }
+      elseif ($social_stats_options == 1) {
+        $start_date = variable_get('social_stats_date_offset', '-100 days');
+      }
 
-    $start_date = strtotime($start_date);
-    // Fetch node id and type for the content types,
-    // which has at least one social media selected and
-    // which are created after the date mentioned in module's configuration.
-    $query = db_select('node', 'n')
-              ->fields('n', array('nid', 'type'))
-              ->condition('n.type', empty($content_types) ? '0' : $content_types)
-              ->condition('n.created', $start_date, '>=')
-              ->execute();
-    $queue = DrupalQueue::get('social_stats_update_stats');
-    while ($result = $query->fetchObject()) {
-      $queue->createItem($result);
+      $start_date = strtotime($start_date);
+      // Fetch node id and type for the content types,
+      // which has at least one social media selected and
+      // which are created after the date mentioned in module's configuration.
+      $query = db_select('node', 'n')
+        ->fields('n', array('nid', 'type'))
+        ->condition('n.type', $content_types)
+        ->condition('n.created', $start_date, '>=')
+        ->execute();
+
+      $queue = DrupalQueue::get('social_stats_update_stats');
+
+      $batches = array();
+
+      // Group results on service config combination.
+      while ($result = $query->fetchObject()) {
+        $config_digest = $content_types_config_digests[$result->type];
+        $batches[$config_digest][$result->nid] = $result;
+      }
+
+      foreach ($batches as $config_digest => $batch_items) {
+        // Get services for this node type
+        $node_type_services = $services[$config_digest];
+        $batch = array(
+          'items' => $batch_items,
+          'unfetched_services' => $node_type_services,
+        );
+        // Push all items to single queue entry where it will be subdivided.
+        $queue->createItem($batch);
+      }
     }
   }
+}
+
+/**
+ * Split batch into even chunks of max $max items.
+ *
+ * @param $items
+ * @param int $max
+ * @return array
+ */
+function _social_stats_batch_split($items, $max = 1) {
+  // Divide items evenly in batches
+  $total_count = count($items);
+  $num_batches = ceil($total_count / $max);
+  $max = ceil($total_count / $num_batches);
+
+  $batch = array();
+  $batches = array();
+  foreach ($items as $item) {
+    $batch[$item->nid] = $item;
+    // Push max num items to queue.
+    if (count($batch) == $max) {
+      $batches[] = $batch;
+      // reset.
+      $batch = array();
+    }
+  }
+  if (count($batch)) {
+    $batches[] = $batch;
+  }
+  return $batches;
 }
 
 /**

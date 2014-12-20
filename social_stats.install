@@ -79,18 +79,13 @@ function social_stats_schema() {
         'not null' => TRUE,
       ),
       'plusone' => array(
-        'description' => 'Number of times this node has been plus oned.',
+        'description' => 'Number of times this node has been plus oned or shared.',
         'type' => 'int',
         'default' => 0,
       ),
       'share' => array(
         'type' => 'int',
         'description' => "GooglePlus Shares",
-        'not null' => FALSE,
-      ),
-      'total' => array(
-        'type' => 'int',
-        'description' => "GooglePlus Total",
         'not null' => FALSE,
       ),
       'changed' => array(
@@ -258,5 +253,12 @@ function social_stats_update_7003() {
   if (!db_field_exists('social_stats_total', 'queued')) {
     db_add_field('social_stats_total', 'queued', $queued);
   }
+}
 
+/**
+ * Implements hook_update_N().
+ * Drops the unwanted field "total" from "social_stats_gplus" table.
+ */
+function social_stats_update_7004() {
+  db_drop_field("social_stats_gplus", "total");
 }

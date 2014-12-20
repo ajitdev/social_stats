@@ -190,25 +190,10 @@ function social_stats_views_views_data() {
     ),
   );
 
-  // Define field, filter and sort type plugins for plusone total count.
-  $data['social_stats_gplus']['total'] = array(
-    'title' => t('Google+ Total Count'),
-    'help' => t('Number of times this node has been +1ed and shared.'),
-    'field' => array(
-      'handler' => 'views_handler_field_numeric',
-    ),
-    'filter' => array(
-      'handler' => 'views_handler_filter_group_by_numeric',
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-  );
-
   // Define field, filter and sort type plugins for googleplus plusone.
   $data['social_stats_gplus']['plusone'] = array(
     'title' => t('Google+ plusone'),
-    'help' => t('Number of times this node has been +1ed.'),
+    'help' => t('Number of times this node has been +1ed and/or shared.'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
     ),

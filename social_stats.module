@@ -219,9 +219,8 @@ function _social_stats_googleplus_multiple(&$nodes) {
   foreach ($nodes as &$node) {
     $node_path = $node->node_path;
 
-    $gplus_like_count = _social_stats_googleplus_plusone($node_path);
+    $gplus_plusone_count = _social_stats_googleplus_plusone($node_path);
     $gplus_share_count = _social_stats_googleplus_share($node_path);
-    $gplus_count = $gplus_like_count + $gplus_share_count;
 
     // Only update table if counter > 0
     if ($gplus_count) {
@@ -229,15 +228,14 @@ function _social_stats_googleplus_multiple(&$nodes) {
         ->key(array('nid' => $node->nid))
         ->fields(
           array(
-            'plusone' => $gplus_like_count,
+            'plusone' => $gplus_plusone_count,
             'share' => $gplus_share_count,
-            'total' => $gplus_count,
             'changed' => REQUEST_TIME,
           )
         )
         ->execute();
     }
-    $node->social_stats['Google Plus'] = $gplus_count;
+    $node->social_stats['Google Plus'] = $gplus_plusone_count;
   }
 }
 

@@ -139,6 +139,18 @@ function social_stats_schema() {
         'type' => 'int',
         'default' => 0,
       ),
+      'changed' => array(
+        'description' => 'Time at which the data finished being fetched and totalled.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'queued' => array(
+        'description' => 'Boolean indicating whether this node is currently queued.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('nid'),
   );
@@ -220,4 +232,31 @@ function social_stats_update_7002() {
   if (!db_field_exists('social_stats_linkedin', 'changed')) {
     db_add_field('social_stats_linkedin', 'changed', $spec);
   }
+}
+
+/**
+ * Implements hook_update_N().
+ * Add the changed timestamp to social_stats total table,
+ * along with a boolean for if the node is queued.
+ */
+function social_stats_update_7003() {
+  $changed = array(
+    'description' => 'Time at which the data finished being fetched and totalled.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  if (!db_field_exists('social_stats_total', 'changed')) {
+    db_add_field('social_stats_total', 'changed', $changed);
+  }
+  $queued = array(
+    'description' => 'Boolean indicating whether this node is currently queued.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  if (!db_field_exists('social_stats_total', 'queued')) {
+    db_add_field('social_stats_total', 'queued', $queued);
+  }
+
 }

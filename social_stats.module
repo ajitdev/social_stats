@@ -354,14 +354,15 @@ function _social_stats_update($batch) {
     $item = reset($batch['items']);
 
     // Adding the total data from all services to get total virality.
-    // Update table only when counter > 0
     $count_total = array_sum($item->social_stats);
-    if ($count_total) {
-      db_merge('social_stats_total')
-        ->key(array('nid' => $item->nid))
-        ->fields(array('total_virality' => $count_total))
-        ->execute();
-    }
+    db_merge('social_stats_total')
+      ->key(array('nid' => $item->nid))
+      ->fields(array(
+          'total_virality' => $count_total,
+          'changed' => REQUEST_TIME,
+          'queued' => 0,
+      ))
+      ->execute();
   }
   else {
     // We have services left and too many items in this batch to fetch them.
@@ -503,22 +504,36 @@ function social_stats_cron() {
 
       $start_date = strtotime($start_date);
       // Fetch node id and type for the content types,
-      // which has at least one social media selected and
-      // which are created after the date mentioned in module's configuration.
-      $query = db_select('node', 'n')
-        ->fields('n', array('nid', 'type'))
-        ->condition('n.type', $content_types)
-        ->condition('n.created', $start_date, '>=')
-        ->execute();
+      // which has at least one social media selected,
+      // is created after the date mentioned in module's configuration,
+      // and isn't already in the queue
+      // sort first by longest ago updated social stats,
+      // then by most recently created.
+      $query = db_select('node', 'n');
+      $query->leftJoin('social_stats_total', 's', 'n.nid = s.nid');
+      $query->fields('n', array('nid', 'type'));
+      $query->condition('n.type', empty($content_types) ? '0' : $content_types);
+      $query->condition('n.created', $start_date, '>=');
+      $query_or = db_or()
+          ->condition('s.queued', 0)
+          ->condition('s.queued', NULL);
+      $query->condition($query_or);
+      $query->orderBy('s.changed');
+      $query->orderBy('n.created', 'DESC');
+      $result = $query->execute();
 
       $queue = DrupalQueue::get('social_stats_update_stats');
 
       $batches = array();
 
-      // Group results on service config combination.
-      while ($result = $query->fetchObject()) {
-        $config_digest = $content_types_config_digests[$result->type];
-        $batches[$config_digest][$result->nid] = $result;
+      // Group results on service config combination
+      while ($record = $result->fetchObject()) {
+        $config_digest = $content_types_config_digests[$record->type];
+        $batches[$config_digest][$record->nid] = $record;
+        db_merge('social_stats_total')
+          ->key(array('nid' => $record->nid))
+          ->fields(array('queued' => 1))
+          ->execute();
       }
 
       foreach ($batches as $config_digest => $batch_items) {

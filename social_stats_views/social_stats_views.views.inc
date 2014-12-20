@@ -276,5 +276,42 @@ function social_stats_views_views_data() {
     ),
   );
 
+  // Define field, filter and sort type plugins for total timestamp.
+  $data['social_stats_total']['changed'] = array(
+    'title' => t('Total Updated Date'),
+    'help' => t('Time at which the data finished being fetched and totalled.'),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
+  );
+
+  // Define field, filter and sort type plugins for total queued boolean.
+  $data['social_stats_total']['queued'] = array(
+    'title' => t('Total Queued'),
+    'help' => t('Whether or not this node is currently queued to pull fresh social stats.'),
+    'field' => array(
+      'handler' => 'views_handler_field_boolean',
+      'click sortable' => TRUE,
+      'output formats' => array(
+        'queued-notqueued' => array(t('Queued'), t('Not queued')),
+      ),
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_boolean_operator',
+      'label' => t('Queued'),
+      'type' => 'yes-no',
+      'use equal' => TRUE, // Use status = 1 instead of status <> 0 in WHERE statment
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
   return $data;
 }

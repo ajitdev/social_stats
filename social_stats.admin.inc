@@ -13,7 +13,7 @@ function social_stats_general_settings_form($form, &$form_state) {
   drupal_add_library('system', 'ui.datepicker');
   drupal_add_js("jQuery(document).ready(function(){
       jQuery('.pickadate').datepicker({
-        dateFormat: 'dd/mm/yy',
+        dateFormat: 'mm/dd/yy',
         autoSize: true,
         inline: true,
       });
@@ -41,8 +41,8 @@ function social_stats_general_settings_form($form, &$form_state) {
   $form['basic_settings']['social_stats_options'] = array(
     '#type' => 'radios',
     '#title' => t('Select options'),
-    '#options' => array('Start Date', 'Offset',),
-    '#default_value' => variable_get('social_stats_options', ''),
+    '#options' => array('Start Date', 'Offset'),
+    '#default_value' => variable_get('social_stats_options', 0),
   );
 
   $form['basic_settings']['social_stats_start_date'] = array(

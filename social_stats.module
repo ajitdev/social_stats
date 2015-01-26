@@ -352,15 +352,17 @@ function _social_stats_update($batch) {
     $item = reset($batch['items']);
 
     // Adding the total data from all services to get total virality.
-    $count_total = array_sum($item->social_stats);
-    db_merge('social_stats_total')
-      ->key(array('nid' => $item->nid))
-      ->fields(array(
+    if ($item->social_stats != NULL) {
+      $count_total = array_sum($item->social_stats);
+      db_merge('social_stats_total')
+        ->key(array('nid' => $item->nid))
+        ->fields(array(
           'total_virality' => $count_total,
           'changed' => REQUEST_TIME,
           'queued' => 0,
-      ))
-      ->execute();
+        ))
+        ->execute();
+    }
   }
   else {
     // We have services left and too many items in this batch to fetch them.

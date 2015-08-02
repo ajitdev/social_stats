@@ -344,16 +344,15 @@ function _social_stats_update($batch) {
         unset($services[$name]);
       }
     }
-  }
 
-  // Check if batch contains only one item and all services have been fetched.
-  if (empty($batch['unfetched_services'])) {
-    // Only one item in batch, update total.
-    $item = reset($batch['items']);
+    foreach ($batch['items'] as $item) {
+      $count_total = 0;
 
-    // Adding the total data from all services to get total virality.
-    if ($item->social_stats != NULL) {
-      $count_total = array_sum($item->social_stats);
+      // Adding the total data from all services to get total virality.
+      if ((!empty($item->social_stats)) && ($item->social_stats != NULL)) {
+        $count_total = array_sum($item->social_stats);
+      }
+
       db_merge('social_stats_total')
         ->key(array('nid' => $item->nid))
         ->fields(array(
@@ -364,7 +363,8 @@ function _social_stats_update($batch) {
         ->execute();
     }
   }
-  else {
+
+  if (!empty($batch['unfetched_services'])) {
     // We have services left and too many items in this batch to fetch them.
     // Get the maximum amount of items any unfetched service can handle.
     $service_max = _social_stats_get_services_max($services);
@@ -510,15 +510,23 @@ function social_stats_cron() {
       // sort first by longest ago updated social stats,
       // then by most recently created.
       $query = db_select('node', 'n');
-      $query->leftJoin('social_stats_total', 's', 'n.nid = s.nid');
+      $query->leftJoin('social_stats_total', 'sst', 'n.nid = sst.nid');
+      $query->leftJoin('social_stats_facebook', 'ssf', 'n.nid = ssf.nid');
+      $query->leftJoin('social_stats_gplus', 'ssg', 'n.nid = ssg.nid');
+      $query->leftJoin('social_stats_linkedin', 'ssli', 'n.nid = ssli.nid');
+      $query->leftJoin('social_stats_twitter', 'sstw', 'n.nid = sstw.nid');
       $query->fields('n', array('nid', 'type'));
+      $query->fields('ssf', array('fb_total'));
+      $query->fields('ssg', array('plusone'));
+      $query->fields('ssli', array('linkedin_shares'));
+      $query->fields('sstw', array('tweets'));
       $query->condition('n.type', empty($content_types) ? '0' : $content_types);
       $query->condition('n.created', $start_date, '>=');
       $query_or = db_or()
-          ->condition('s.queued', 0)
-          ->condition('s.queued', NULL);
+          ->condition('sst.queued', 0)
+          ->condition('sst.queued', NULL);
       $query->condition($query_or);
-      $query->orderBy('s.changed');
+      $query->orderBy('sst.changed');
       $query->orderBy('n.created', 'DESC');
       $result = $query->execute();
 
@@ -528,6 +536,12 @@ function social_stats_cron() {
 
       // Group results on service config combination
       while ($record = $result->fetchObject()) {
+        $record->social_stats = array(
+          'Facebook' => (!empty($record->fb_total)) ? ($record->fb_total) : 0,
+          'Google Plus' => (!empty($record->plusone)) ? ($record->plusone) : 0,
+          'LinkedIn' => (!empty($record->linkedin_shares)) ? ($record->linkedin_shares) : 0,
+          'Twitter' => (!empty($record->tweets)) ? ($record->tweets) : 0,
+        );
         $config_digest = $content_types_config_digests[$record->type];
         $batches[$config_digest][$record->nid] = $record;
         db_merge('social_stats_total')

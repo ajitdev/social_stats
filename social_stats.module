@@ -522,6 +522,7 @@ function social_stats_cron() {
       $query->fields('sstw', array('tweets'));
       $query->condition('n.type', empty($content_types) ? '0' : $content_types);
       $query->condition('n.created', $start_date, '>=');
+      $query->condition('n.status', 1);
       $query_or = db_or()
           ->condition('sst.queued', 0)
           ->condition('sst.queued', NULL);

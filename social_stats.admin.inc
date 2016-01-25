@@ -135,12 +135,12 @@ function social_stats_content_types_form() {
     );
     $form['social_stats'][$i]['social_stats_' . $types->type] = array(
       '#type' => 'checkboxes',
-      '#options' => drupal_map_assoc(array(
-        t('Facebook'),
-        t('Twitter'),
-        t('Google Plus'),
-        t('LinkedIn'),
-      )),
+      '#options' => array(
+        'Facebook' => t('Facebook'),
+        'Twitter' => t('Twitter'),
+        'Google Plus' => t('Google Plus'),
+        'LinkedIn' => t('LinkedIn'),
+      ),
       '#default_value' => variable_get('social_stats_' . $types->type, array(0)),
     );
     $i++;

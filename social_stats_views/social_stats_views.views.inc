@@ -28,6 +28,7 @@ function social_stats_views_views_data() {
     'help' => t('Number of Facebook likes for this node.'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_group_by_numeric',
@@ -43,6 +44,7 @@ function social_stats_views_views_data() {
     'help' => t('Number of Facebook shares for this node.'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_group_by_numeric',
@@ -58,6 +60,7 @@ function social_stats_views_views_data() {
     'help' => t('Number of Facebook comments on this node.'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_group_by_numeric',
@@ -73,6 +76,7 @@ function social_stats_views_views_data() {
     'help' => t('Value of (Facebook likes + Facebook shares + Facebook comments).'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_group_by_numeric',
@@ -88,6 +92,7 @@ function social_stats_views_views_data() {
     'help' => t('Time at which the data from Facebook was updated.'),
     'field' => array(
       'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_date',
@@ -114,6 +119,7 @@ function social_stats_views_views_data() {
     'help' => t('Value of times this node has been tweeted.'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_group_by_numeric',
@@ -129,6 +135,7 @@ function social_stats_views_views_data() {
     'help' => t('Time at which the data from Twitter was updated.'),
     'field' => array(
       'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_date',
@@ -155,6 +162,7 @@ function social_stats_views_views_data() {
     'help' => t('Value of times this node has been shared on LinkedIn.'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_group_by_numeric',
@@ -170,6 +178,7 @@ function social_stats_views_views_data() {
     'help' => t('Time at which the data from LinkedIn was updated.'),
     'field' => array(
       'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_date',
@@ -196,6 +205,7 @@ function social_stats_views_views_data() {
     'help' => t('Number of times this node has been +1ed and/or shared.'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_group_by_numeric',
@@ -204,13 +214,14 @@ function social_stats_views_views_data() {
       'handler' => 'views_handler_sort',
     ),
   );
-  
+
   // Define field, filter and sort type plugins for googleplus share count.
   $data['social_stats_gplus']['share'] = array(
     'title' => t('Google+ Share Count'),
     'help' => t('Number of times this node has been shared on Google+.'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_group_by_numeric',
@@ -226,6 +237,7 @@ function social_stats_views_views_data() {
     'help' => t('Time at which the data from GooglePlus was updated.'),
     'field' => array(
       'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_date',
@@ -252,6 +264,7 @@ function social_stats_views_views_data() {
     'help' => t('(Facebook total + Twitter Shares + LinkedIn Shares + Google plus shares)'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_group_by_numeric',
@@ -267,6 +280,7 @@ function social_stats_views_views_data() {
     'help' => t('Time at which the data finished being fetched and totalled.'),
     'field' => array(
       'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_date',

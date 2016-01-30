@@ -103,49 +103,6 @@ function social_stats_views_views_data() {
   );
 
   // Use the same group which was defined earlier to group plugins.
-  $data['social_stats_twitter']['table']['group'] = t('Social Stats');
-
-  // Join the table with default node table.
-  $data['social_stats_twitter']['table']['join'] = array(
-    'node' => array(
-      'left_field' => 'nid',
-      'field' => 'nid',
-    ),
-  );
-
-  // Define field, filter and sort type plugins for Tweets count.
-  $data['social_stats_twitter']['tweets'] = array(
-    'title' => t('Twitter shares'),
-    'help' => t('Value of times this node has been tweeted.'),
-    'field' => array(
-      'handler' => 'views_handler_field_numeric',
-      'click sortable' => TRUE,
-    ),
-    'filter' => array(
-      'handler' => 'views_handler_filter_group_by_numeric',
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-  );
-
-  // Define field, filter and sort type plugins for Twitter timestamp.
-  $data['social_stats_twitter']['changed'] = array(
-    'title' => t('Twitter Updated Date'),
-    'help' => t('Time at which the data from Twitter was updated.'),
-    'field' => array(
-      'handler' => 'views_handler_field_date',
-      'click sortable' => TRUE,
-    ),
-    'filter' => array(
-      'handler' => 'views_handler_filter_date',
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort_date',
-    ),
-  );
-
-  // Use the same group which was defined earlier to group plugins.
   $data['social_stats_linkedin']['table']['group'] = t('Social Stats');
 
   // Join the table with default node table.
@@ -261,7 +218,7 @@ function social_stats_views_views_data() {
   // Define field, filter and sort type plugins for total shares.
   $data['social_stats_total']['total_virality'] = array(
     'title' => t('Total social shares'),
-    'help' => t('(Facebook total + Twitter Shares + LinkedIn Shares + Google plus shares)'),
+    'help' => t('(Facebook total + LinkedIn Shares + Google plus shares)'),
     'field' => array(
       'handler' => 'views_handler_field_numeric',
       'click sortable' => TRUE,

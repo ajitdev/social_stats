@@ -47,29 +47,6 @@ function social_stats_schema() {
     'primary key' => array('nid'),
   );
 
-  $schema['social_stats_twitter'] = array(
-    'description' => 'Table containing Twitter data for Social Stats module.',
-    'fields' => array(
-      'nid' => array(
-        'description' => 'Node id of a node.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'tweets' => array(
-        'description' => 'Number of times this node has been tweeted.',
-        'type' => 'int',
-        'default' => 0,
-      ),
-      'changed' => array(
-        'description' => 'Time at which the data was last fetched.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-    ),
-    'primary key' => array('nid'),
-  );
-
   $schema['social_stats_gplus'] = array(
     'description' => 'Table containing stats from Google Plus for Social Stats module.',
     'fields' => array(
@@ -122,7 +99,7 @@ function social_stats_schema() {
   );
 
   $schema['social_stats_total'] = array(
-    'description' => 'Value of (Facebook total + Twitter Shares + LinkedIn Shares + Google plus shares).',
+    'description' => 'Value of (Facebook total + LinkedIn Shares + Google plus shares).',
     'fields' => array(
       'nid' => array(
         'description' => 'Node id of a node.',
@@ -130,7 +107,7 @@ function social_stats_schema() {
         'not null' => TRUE,
       ),
       'total_virality' => array(
-        'description' => '(Facebook total + Twitter Shares + LinkedIn Shares + Google plus shares)',
+        'description' => '(Facebook total + LinkedIn Shares + Google plus shares)',
         'type' => 'int',
         'default' => 0,
       ),
@@ -261,4 +238,23 @@ function social_stats_update_7003() {
  */
 function social_stats_update_7004() {
   db_drop_field("social_stats_gplus", "total");
+}
+
+/**
+ * Implements hook_update_N().
+ * Drop the twitter table and remove settings from the variable.
+ */
+function social_stats_update_7005() {
+  if (db_table_exists('social_stats_twitter')) {
+    db_drop_table('social_stats_twitter');
+  }
+
+  $node_types = node_type_get_types();
+  foreach ($node_types as $types) {
+    $social_name = variable_get('social_stats_' . $types->type, array());
+    if (!empty($social_name) && in_array('Twitter', $social_name)) {
+      unset($social_name['Twitter']);
+      variable_set('social_stats_' . $types->type, $social_name);
+    }
+  }
 }

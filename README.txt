@@ -5,10 +5,9 @@ SOCIAL STATS MODULE README
 This is a statistics module. It provides data from various social
 media sites. The data which is saved per node includes data from:
 1. Facebook    : likes count, shares count, comments count & total count.
-2. Twitter     : tweets count.
-3. LinkedIn    : share count.
-4. Google Plus : plus one count
-5. Total Count: Facebook + Twitter + LinkeIn + Google Plus
+2. LinkedIn    : share count.
+3. Google Plus : plus one count
+4. Total Count : Facebook + LinkeIn + Google Plus
 
 ------------------------
 MODULE STRUCTURE
@@ -69,7 +68,7 @@ features to views.
 
 Social Stats Panels module will enable you to have the following additional
 content type(s) to panels panels.
-1. Total Shares: Facebook total + Twitter + LinkedIn + Google Plus.
+1. Total Shares: Facebook total + LinkedIn + Google Plus.
 
 This content type will be visible under "Social Stats" category under
 "Add content" area on the node view by default. If you wish to add this

@@ -137,7 +137,6 @@ function social_stats_content_types_form() {
       '#type' => 'checkboxes',
       '#options' => array(
         'Facebook' => t('Facebook'),
-        'Twitter' => t('Twitter'),
         'Google Plus' => t('Google Plus'),
         'LinkedIn' => t('LinkedIn'),
       ),

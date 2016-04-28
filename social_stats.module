@@ -471,7 +471,6 @@ function social_stats_cron() {
       $query->fields('ssf', array('fb_total'));
       $query->fields('ssg', array('plusone'));
       $query->fields('ssli', array('linkedin_shares'));
-      $query->fields('sstw', array('tweets'));
       $query->condition('n.type', empty($content_types) ? '0' : $content_types);
       $query->condition('n.created', $start_date, '>=');
       $query->condition('n.status', 1);

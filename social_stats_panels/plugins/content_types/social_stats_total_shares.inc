@@ -3,7 +3,7 @@
 /**
  * @file
  * Returns a content type with
- * Facebook total + plus one count + tweets count + linkedin shares number
+ * Facebook total + plus one count + linkedin shares number
  * of facebook shares of the node. Only available on on node view i.e. with
  * required context node being viewed
  */

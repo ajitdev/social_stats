@@ -181,7 +181,7 @@ function _social_stats_googleplus_multiple(&$nodes) {
     $gplus_share_count = _social_stats_googleplus_share($node_path);
 
     // Only update table if counter > 0
-    if ($gplus_count) {
+    if ($gplus_plusone_count || $gplus_share_count) {
       db_merge('social_stats_gplus')
         ->key(array('nid' => $node->nid))
         ->fields(
